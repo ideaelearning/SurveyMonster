@@ -1,20 +1,35 @@
 # Implementation Plan
 
-- [ ] 1. Set up project infrastructure and configuration
+- [x] 1. Set up project infrastructure and configuration
+
+
+
+
+
   - Configure appsettings.json with API base URL and authentication settings
   - Register HttpClient, services, and session middleware in Program.cs with DI
   - Add necessary NuGet packages (System.IdentityModel.Tokens.Jwt if needed)
   - _Requirements: 7.4, 7.5_
 
-- [ ] 2. Implement core data models and DTOs
+- [x] 2. Implement core data models and DTOs
+
+
+
+
+
   - Create DTOs for API responses (SurveyDetailDto, SurveyQuestionDto, SurveyQuestionOptionDto, etc.)
   - Create request models (CreateSurveyEntryRequest, SaveAnswerRequest)
   - Create AuthResult model for authentication responses
   - Create ViewModels (LoginViewModel, SurveyInfoViewModel, QuestionViewModel)
   - _Requirements: 2.2, 3.1, 4.1, 5.1_
 
-- [ ] 3. Implement API client service
-  - [ ] 3.1 Create IApiClient interface and ApiClient implementation
+- [-] 3. Implement API client service
+
+
+  - [x] 3.1 Create IApiClient interface and ApiClient implementation
+
+
+
     - Implement GetAsync<T> and PostAsync<T> methods
     - Add JWT token management (SetAuthToken method)
     - Implement error handling and logging

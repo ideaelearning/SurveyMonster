@@ -3,6 +3,32 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Configure HttpClient
+builder.Services.AddHttpClient("SurveyMonsterApi", client =>
+{
+    var baseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+    if (!string.IsNullOrEmpty(baseUrl))
+    {
+        client.BaseAddress = new Uri(baseUrl);
+    }
+    var timeout = builder.Configuration.GetValue<int>("ApiSettings:Timeout");
+    client.Timeout = TimeSpan.FromSeconds(timeout > 0 ? timeout : 30);
+});
+
+// Add Session support
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Add HttpContextAccessor for accessing HttpContext in services
+builder.Services.AddHttpContextAccessor();
+
+// Register API Client service
+builder.Services.AddScoped<SurveyMonster.Services.IApiClient, SurveyMonster.Services.ApiClient>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -17,6 +43,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Enable session middleware
+app.UseSession();
 
 app.UseAuthorization();
 
