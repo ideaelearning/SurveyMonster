@@ -1,8 +1,53 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 text-center">
+            <div class="mb-4">
+                <i class="bi bi-clipboard-check text-primary" style="font-size: 5rem;"></i>
+            </div>
+            <h1 class="display-4 mb-3">Survey Monster'a Hoş Geldiniz</h1>
+            <p class="lead mb-4">Anketlerimize katılarak fikirlerinizi bizimle paylaşın.</p>
+
+            @if (Context.Session.GetString("AuthToken") != null)
+            {
+                <div class="d-grid gap-2 col-6 mx-auto">
+                    <a asp-controller="Survey" asp-action="Index" class="btn btn-primary btn-lg">
+                        <i class="bi bi-play-circle"></i> Ankete Git
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="d-grid gap-2 col-6 mx-auto">
+                    <a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                    </a>
+                </div>
+            }
+
+            <div class="mt-5">
+                <h5 class="mb-3">Özellikler</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Güvenli</h6>
+                        <p class="text-muted">JWT ile korunan güvenli giriş sistemi</p>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="bi bi-lightning text-warning" style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Hızlı</h6>
+                        <p class="text-muted">Anketleri hızlı ve kolay bir şekilde tamamlayın</p>
+                    </div>
+                    <div class="col-md-4">
+                        <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                        <h6 class="mt-2">Etkili</h6>
+                        <p class="text-muted">Görüşleriniz bizim için değerli</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

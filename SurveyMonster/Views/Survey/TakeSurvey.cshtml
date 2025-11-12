@@ -1,0 +1,379 @@
+﻿@model SurveyMonster.Models.ViewModels.SurveyTakingViewModel
+@{
+    ViewData["Title"] = "Anket - " + Model.SurveyName;
+    Layout = "";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Survey Monster</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SurveyMonster.styles.css" asp-append-version="true" />
+
+    <style>
+        .survey-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .survey-header::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 250px;
+                height: 250px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 50%;
+                transform: translate(50%, -50%);
+            }
+
+        .progress-bar-custom {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+            .question-card:hover {
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+                transform: translateY(-2px);
+            }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-right: 0.875rem;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0;
+        }
+
+        .option-item {
+            position: relative;
+            padding: 0.875rem 1.25rem;
+            margin-bottom: 0.625rem;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .option-item:hover {
+                background: #e9ecef;
+                border-color: #667eea;
+                transform: translateX(5px);
+            }
+
+            .option-item input[type="radio"]:checked + label {
+                color: #667eea;
+                font-weight: 600;
+            }
+
+            .option-item:has(input[type="radio"]:checked) {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+                border-color: #667eea;
+                border-width: 2px;
+            }
+
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+
+            .form-check-input:checked {
+                background-color: #667eea;
+                border-color: #667eea;
+            }
+
+        .form-check-label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #374151;
+            margin-left: 0.5rem;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 2rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+            .submit-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            }
+
+        .cancel-btn {
+            background: #6b7280;
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 2rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+            .cancel-btn:hover {
+                background: #4b5563;
+                transform: translateY(-2px);
+            }
+
+        .survey-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animated {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .info-badge {
+            display: inline-block;
+            padding: 0.4rem 0.875rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 0.375rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-2 mb-2">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" style="width:60%">
+                <div class="survey-container">
+                    <!-- Survey Header -->
+                    <div class="survey-header">
+                        <div class="info-badge">
+                            <i class="bi bi-clipboard-data me-2"></i>Anket Formu
+                        </div>
+
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline" style="float:right">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Çıkış
+                            </button>
+                        </form>
+               
+                        <h4 class="mb-1 fw-bold" style="position: relative;">@Model.SurveyName</h4>
+                        <p class="mb-0" style="opacity: 0.9; font-size: 0.9rem;">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Lütfen tüm soruları dikkatle okuyup cevaplayınız
+                        </p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="px-3 py-2" style="background: #f8f9fa;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted fw-bold">İlerleme</small>
+                            <small class="text-muted">
+                                <span id="answeredCount">0</span> / @Model.Questions.Count soru
+                            </small>
+                        </div>
+                        <div class="progress-bar-custom">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-3">
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger border-0 shadow-sm mb-3" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                @TempData["Error"]
+                            </div>
+                        }
+
+                        <form asp-action="SubmitSurvey" method="post" id="surveyForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="entryId" value="@Model.EntryId" />
+
+                            @for (int i = 0; i < Model.Questions.Count; i++)
+                            {
+                                var question = Model.Questions[i];
+                                <div class="question-card animated" style="animation-delay: @(i * 0.05)s;">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="question-number">@(i + 1)</div>
+                                        <h6 class="question-text flex-grow-1">@question.QuestionText</h6>
+                                    </div>
+
+                                    <div class="options-container">
+                                        @foreach (var option in question.Options)
+                                        {
+                                            <div class="option-item">
+                                                <div class="form-check">
+                                                    <input class="form-check-input question-input"
+                                                           type="radio"
+                                                           name="answers[@question.QuestionId]"
+                                                           value="@option.OptionId"
+                                                           id="option_@option.OptionId"
+                                                           data-question="@question.QuestionId"
+                                                           required />
+                                                    <label class="form-check-label w-100" for="option_@option.OptionId">
+                                                        @option.OptionText
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="d-grid gap-2 mt-3">
+                                <button type="submit" class="submit-btn" id="submitBtn" style="justify-self: center">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Anketi Tamamla
+                                </button>
+                            </div>
+
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-shield-check me-1"></i>
+                                    Cevaplarınız güvenli bir şekilde kaydedilecektir
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const totalQuestions = @Model.Questions.Count;
+    const progressFill = document.getElementById('progressFill');
+    const answeredCountEl = document.getElementById('answeredCount');
+    const inputs = document.querySelectorAll('.question-input');
+
+    // Update progress on radio button change
+  inputs.forEach(input => {
+        input.addEventListener('change', updateProgress);
+});
+
+    function updateProgress() {
+        const answeredQuestions = new Set();
+        inputs.forEach(input => {
+            if (input.checked) {
+            answeredQuestions.add(input.getAttribute('data-question'));
+            }
+     });
+
+     const answeredCount = answeredQuestions.size;
+    const percentage = (answeredCount / totalQuestions) * 100;
+
+  progressFill.style.width = percentage + '%';
+        answeredCountEl.textContent = answeredCount;
+    }
+
+    // Form submission validation
+  document.getElementById('surveyForm').addEventListener('submit', function(e) {
+        const questionIds = @Html.Raw(Json.Serialize(Model.Questions.Select(q => q.QuestionId)));
+   let answeredCount = 0;
+
+        for (let i = 0; i < questionIds.length; i++) {
+  const questionId = questionIds[i];
+   if (document.querySelector(`input[name="answers[${questionId}]"]:checked`)) {
+        answeredCount++;
+            }
+        }
+
+    if (answeredCount < totalQuestions) {
+        e.preventDefault();
+            alert(`⚠️ Lütfen tüm soruları cevaplayın!\n\nCevaplanan: ${answeredCount}/${totalQuestions} soru`);
+ return false;
+        }
+
+        if (!confirm('✅ Anketi tamamlamak istediğinize emin misiniz?\n\nCevaplarınız kaydedilecektir.')) {
+            e.preventDefault();
+          return false;
+   }
+    });
+
+    // Smooth scroll to uncompleted questions
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
+        const questionIds = @Html.Raw(Json.Serialize(Model.Questions.Select(q => q.QuestionId)));
+
+        for (let i = 0; i < questionIds.length; i++) {
+          const questionId = questionIds[i];
+            if (!document.querySelector(`input[name="answers[${questionId}]"]:checked`)) {
+      const firstUnanswered = document.querySelector(`input[name="answers[${questionId}]"]`);
+          if (firstUnanswered) {
+        firstUnanswered.closest('.question-card').scrollIntoView({
+             behavior: 'smooth',
+              block: 'center'
+         });
+       }
+ break;
+ }
+        }
+    });
+    </script>
+</body>
+</html>

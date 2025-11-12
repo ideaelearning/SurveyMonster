@@ -26,8 +26,10 @@ builder.Services.AddSession(options =>
 // Add HttpContextAccessor for accessing HttpContext in services
 builder.Services.AddHttpContextAccessor();
 
-// Register API Client service
+// Register services
 builder.Services.AddScoped<SurveyMonster.Services.IApiClient, SurveyMonster.Services.ApiClient>();
+builder.Services.AddScoped<SurveyMonster.Services.IAuthService, SurveyMonster.Services.AuthService>();
+builder.Services.AddScoped<SurveyMonster.Services.ISurveyService, SurveyMonster.Services.SurveyService>();
 
 var app = builder.Build();
 
@@ -51,6 +53,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
 
 app.Run();

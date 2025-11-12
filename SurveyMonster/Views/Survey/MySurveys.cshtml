@@ -1,0 +1,165 @@
+﻿@model SurveyMonster.Models.ViewModels.MySurveysViewModel
+@{
+    ViewData["Title"] = "Anketlerim";
+}
+
+<style>
+ .survey-card {
+   background: white;
+   border-radius: 15px;
+     padding: 1.5rem;
+     margin-bottom: 1.5rem;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+   border-left: 5px solid #667eea;
+    }
+
+    .survey-card:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-3px);
+    }
+
+    .survey-card.completed {
+border-left-color: #10b981;
+    }
+
+    .survey-card.expired {
+     border-left-color: #ef4444;
+  opacity: 0.7;
+    }
+
+  .status-badge {
+    display: inline-block;
+  padding: 0.375rem 0.875rem;
+        border-radius: 20px;
+  font-size: 0.875rem;
+    font-weight: 600;
+    }
+
+ .status-active {
+     background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+   color: #059669;
+    }
+
+ .status-completed {
+ background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(79, 70, 229, 0.2) 100%);
+     color: #4f46e5;
+    }
+
+.status-expired {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+  color: #dc2626;
+    }
+
+    .survey-progress {
+   height: 8px;
+        background: #e5e7eb;
+   border-radius: 10px;
+   overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+ .survey-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+   border-radius: 10px;
+   transition: width 0.3s ease;
+    }
+</style>
+
+<div class="container mt-3 mb-3">
+    <div class="row">
+   <div class="col-12">
+   <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+       <i class="bi bi-clipboard-check me-2"></i>Anketlerim
+     </h2>
+       <a asp-action="Index" class="btn btn-outline-primary">
+          <i class="bi bi-plus-circle me-2"></i>Yeni Anket
+  </a>
+       </div>
+
+       @if (TempData["Error"] != null)
+            {
+       <div class="alert alert-danger border-0 shadow-sm" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+ @TempData["Error"]
+    </div>
+     }
+
+    @if (!Model.Surveys.Any())
+    {
+         <div class="text-center py-5">
+         <i class="bi bi-inbox" style="font-size: 4rem; color: #9ca3af;"></i>
+        <h4 class="mt-3 text-muted">Henüz anketiniz yok</h4>
+       <p class="text-muted">Yeni bir ankete katılmak için yukarıdaki butonu kullanın.</p>
+            </div>
+   }
+  else
+{
+        @foreach (var survey in Model.Surveys)
+        {
+        var cardClass = survey.IsCompleted ? "completed" : survey.IsExpired ? "expired" : "";
+         var statusClass = survey.IsCompleted ? "status-completed" : survey.IsExpired ? "status-expired" : "status-active";
+           var statusText = survey.IsCompleted ? "Tamamlandı" : survey.IsExpired ? "Süresi Doldu" : "Aktif";
+
+          <div class="survey-card @cardClass animated" style="animation: fadeInUp 0.5s ease-out;">
+     <div class="row align-items-center">
+         <div class="col-md-8">
+       <div class="d-flex align-items-center mb-2">
+     <h5 class="mb-0 me-3">@survey.SurveyName</h5>
+            <span class="status-badge @statusClass">@statusText</span>
+             </div>
+    <p class="text-muted mb-2">@survey.Title</p>
+                  <small class="text-muted">
+    <i class="bi bi-calendar me-1"></i>
+                @survey.StartDate.ToString("dd.MM.yyyy") - @survey.EndDate.ToString("dd.MM.yyyy")
+       </small>
+
+     @if (survey.CompletionPercentage.HasValue)
+        {
+           <div class="mt-2">
+        <small class="text-muted">İlerleme: @survey.CompletionPercentage.Value.ToString("F0")%</small>
+      <div class="survey-progress">
+     <div class="survey-progress-fill" style="width: @(survey.CompletionPercentage.Value)%"></div>
+       </div>
+         </div>
+           }
+
+<div class="mt-2">
+                  <small class="text-muted">
+       <i class="bi bi-check-circle me-1"></i>
+    @survey.SurveyEntryCompletedCount / @survey.MaxTakeCount katılım
+               </small>
+         </div>
+          </div>
+
+         <div class="col-md-4 text-end">
+           @if (survey.IsCompleted)
+  {
+          <a asp-action="SurveyReport" asp-route-assignmentId="@survey.SurveyAssignmentId" 
+     class="btn btn-outline-primary mb-2">
+       <i class="bi bi-bar-chart me-2"></i>Raporu Gör
+                </a>
+        }
+ else if (survey.CanTake)
+      {
+     <a asp-action="Index" asp-route-surveyId="@survey.SurveyId" 
+        class="btn btn-success mb-2">
+        <i class="bi bi-play-circle me-2"></i>Ankete Git
+     </a>
+    }
+      else if (survey.IsExpired)
+            {
+    <button class="btn btn-secondary mb-2" disabled>
+      <i class="bi bi-clock-history me-2"></i>Süresi Doldu
+</button>
+               }
+           </div>
+ </div>
+      </div>
+           }
+            }
+        </div>
+    </div>
+</div>

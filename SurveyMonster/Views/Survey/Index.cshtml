@@ -1,0 +1,218 @@
+﻿@model SurveyMonster.Models.ViewModels.SurveyInfoViewModel
+@{
+    ViewData["Title"] = "Anket Bilgisi";
+}
+
+<style>
+    .survey-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+        .info-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+    .info-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.875rem;
+        font-size: 1.25rem;
+        color: white;
+    }
+
+    .start-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.875rem 2rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .start-btn:active {
+            transform: translateY(-1px);
+        }
+
+    .survey-badge {
+        display: inline-block;
+        padding: 0.4rem 0.875rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+</style>
+
+<div class="container mt-3 mb-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-10" style="width:70%">
+            <!-- Hero Section -->
+            <div class="survey-hero animated">
+                <div class="survey-badge">
+                    <i class="bi bi-clipboard-check me-2"></i>Anket
+                </div>
+                <h1 class="display-6 fw-bold mb-2">@Model.Name</h1>
+                <p class="mb-0" style="opacity: 0.95; font-size: 1rem;">@Model.InformationText</p>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="info-card animated" style="animation-delay: 0.2s;">
+                <h5 class="mb-3 fw-bold" style="color: #1f2937;">
+                    <i class="bi bi-info-circle me-2" style="color: #667eea;"></i>Anket Detayları
+                </h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-question-circle"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Soru Sayısı</small>
+                                <strong class="h6 mb-0">@Model.QuestionCount Soru</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Son Katılım Tarihi</small>
+                                <strong class="h6 mb-0">@Model.ExpireDate.ToString("dd MMMM yyyy")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Tahmini Süre</small>
+                                <strong class="h6 mb-0">~@(Model.QuestionCount * 30) saniye</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block">Durum</small>
+                                <strong class="h6 mb-0 text-success">Aktif</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (TempData["Error"] != null)
+              {
+                <div class="alert alert-danger mt-3 border-0 shadow-sm" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    @TempData["Error"]
+                </div>
+     }
+
+                <!-- Start Survey Form -->
+                <form asp-action="StartSurvey" method="post" class="mt-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="surveyId" value="@Model.SurveyId" />
+
+                    <div class="d-grid" style=" justify-items: center;">
+                        <button type="submit" class="start-btn pulse">
+                            <i class="bi bi-play-circle me-2"></i>
+                            Ankete Başla
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Anketi tamamlamak için tüm soruları cevaplamanız gerekmektedir
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

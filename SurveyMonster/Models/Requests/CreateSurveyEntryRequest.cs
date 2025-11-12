@@ -6,4 +6,6 @@ public class CreateSurveyEntryRequest
     public DateTime StartDate { get; set; }
     public DateTime? FinishDate { get; set; }
     public int SurveyState { get; set; }
+    public float? Score { get; set; }
+    public bool IsLive { get; set; }
 }
