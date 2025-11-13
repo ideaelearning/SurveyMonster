@@ -11,76 +11,76 @@
 </head>
 <body>
     @{
-    var isAnonymous = Context.Session.GetString("IsAnonymous") == "true";
+        var isAnonymous = Context.Session.GetString("IsAnonymous") == "true";
         var hasAuth = Context.Session.GetString("AuthToken") != null;
     }
-  <header>
+    <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary box-shadow mb-2">
-      <div class="container-fluid">
-        <a class="navbar-brand fw-bold" asp-controller="Survey" asp-action="Index">
-<i class="bi bi-clipboard-check"></i> Survey Monster
-  </a>
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" asp-controller="Survey" asp-action="Index">
+                    <i class="bi bi-clipboard-check"></i> Survey Monster
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-      aria-expanded="false" aria-label="Toggle navigation">
-           <span class="navbar-toggler-icon"></span>
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
                 </button>
- <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-           <ul class="navbar-nav flex-grow-1">
-             @if (hasAuth)
-        {
-             @if (!isAnonymous)
-            {
-  <li class="nav-item">
-        <a class="nav-link text-white" asp-controller="Home" asp-action="Index">
-             <i class="bi bi-house"></i> Ana Sayfa
-    </a>
-            </li>
-         <li class="nav-item">
-    <a class="nav-link text-white" asp-controller="Survey" asp-action="MySurveys">
-               <i class="bi bi-clipboard-check"></i> Anketlerim
-    </a>
- </li>
-  }
-        <li class="nav-item">
-       <a class="nav-link text-white" asp-controller="Survey" asp-action="Index">
-      <i class="bi bi-plus-circle"></i> @(isAnonymous ? "Anket" : "Yeni Anket")
-      </a>
-       </li>
- }
-     </ul>
-  <ul class="navbar-nav">
-    @if (hasAuth)
-   {
-         @if (isAnonymous)
-                  {
-           <li class="nav-item">
-               <span class="navbar-text text-white me-3">
-     <i class="bi bi-incognito"></i> Anonim Kullanıcı
-        </span>
-          </li>
-      }
-    <li class="nav-item">
-        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
- <button type="submit" class="btn btn-outline-light btn-sm">
- <i class="bi bi-box-arrow-right"></i> @(isAnonymous ? "Çıkış" : "Çıkış")
-       </button>
-          </form>
-         </li>
-              }
-        </ul>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (hasAuth)
+                        {
+                            @if (!isAnonymous)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Home" asp-action="Index">
+                                        <i class="bi bi-house"></i> Ana Sayfa
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Survey" asp-action="MySurveys">
+                                        <i class="bi bi-clipboard-check"></i> Anketlerim
+                                    </a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Survey" asp-action="Index">
+                                    <i class="bi bi-plus-circle"></i> @(isAnonymous ? "Anket" : "Yeni Anket")
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (hasAuth)
+                        {
+                            @if (isAnonymous)
+                            {
+                                <li class="nav-item">
+                                    <span class="navbar-text text-white me-3">
+                                        <i class="bi bi-incognito"></i> Anonim Kullanıcı
+                                    </span>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-light btn-sm">
+                                        <i class="bi bi-box-arrow-right"></i> @(isAnonymous ? "Çıkış" : "Çıkış")
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
-</nav>
+        </nav>
     </header>
     <div class="container">
- <main role="main" class="pb-2">
-     @RenderBody()
-      </main>
+        <main role="main" class="pb-2">
+            @RenderBody()
+        </main>
     </div>
 
     <footer class="border-top footer text-muted mt-2">
         <div class="container text-center py-2">
- &copy; 2025 - Survey Monster | Anket Sistemi
+            &copy; 2025 - Survey Monster | Anket Sistemi
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

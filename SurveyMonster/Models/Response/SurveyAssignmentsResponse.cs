@@ -1,3 +1,6 @@
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+
 namespace SurveyMonster.Models.Response;
 
 public class SurveyAssignmentsResponse
@@ -11,8 +14,21 @@ public class SurveyAssignmentsResponse
     public int? SurveyMaxTakeCount { get; set; }
     public bool? Imperative { get; set; }
     public int? DefaultGamificationPoint { get; set; }
+    public string? RequiredUserInformations { get; set; }
     public SimpleSurveyResponse? Survey { get; set; }
-  
+
+
+    public RequiredUserInformationsRequest RequiredUserInformationList
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(RequiredUserInformations))
+            {
+                return JsonConvert.DeserializeObject<RequiredUserInformationsRequest>(RequiredUserInformations);
+            }
+            return null;
+        }
+    }
     public bool CanTakeSurvey(int entryCount)
     {
         if (StartDate.HasValue &&

@@ -8,6 +8,8 @@ namespace SurveyMonster.Services;
 public interface ISurveyService
 {
     Task<SurveyDetailDto?> GetSurveyAsync(int surveyId);
+    Task<bool> CheckSurveyAssignment(long assignmentId, bool isAnonymous,string anonymousId);
+    Task<SurveyAssignmentResponse?> GetSurveyAssignmentAsync(long assignmentId,bool isAnonymous);
     Task<int?> CreateSurveyAssignmentAsync(CreateSurveyAssignmentRequest request);
     Task<int?> CreateSurveyAssignmentTakerAsync(CreateSurveyAssignmentTakerRequest request);
     Task<int?> CreateSurveyEntryAsync(CreateSurveyEntryRequest request);

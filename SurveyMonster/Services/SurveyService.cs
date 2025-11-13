@@ -30,8 +30,10 @@ public class SurveyService : ISurveyService
 
             //$"api/Surveys/survey/{surveyId}");
 
-            var response = await _apiClient.GetAsync<ApiResponse<SurveyDetailDto>>(
-     $"api/Surveys/survey/{surveyId}", "http://localhost:5010");
+
+            var url = $"api/Surveys/survey/{surveyId}?isAnonymous={true.ToString().ToLower()}";
+            var response = await _apiClient.GetAsync<ApiResponse<SurveyDetailDto>>(url);
+
 
 
             if (response?.Data != null)
@@ -49,7 +51,55 @@ public class SurveyService : ISurveyService
             throw;
         }
     }
+    public async Task<bool> CheckSurveyAssignment(long assignmentId, bool isAnonymous, string anonymousId)
+    {
+        try
+        {
 
+            var url = $"api/Surveys/checkSurveyAssignment/{assignmentId}?anonymousId={anonymousId} &isAnonymous={isAnonymous.ToString().ToLower()}";
+            var response = await _apiClient.GetAsync<ApiResponse<bool>>( url);
+
+
+
+            if (response?.Data != null)
+            {
+                _logger.LogInformation("Successfully retrieved survey: {SurveyName}", response.Data);
+                return response.Data;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+    public async Task<SurveyAssignmentResponse?> GetSurveyAssignmentAsync(long assignmentId, bool isAnonymous )
+    {
+        try
+        {
+            _logger.LogInformation("Fetching survey details for surveyId: {SurveyId}", assignmentId);
+
+            var url = $"api/Surveys/surveyAssignment/{assignmentId}?isAnonymous={isAnonymous.ToString().ToLower()}";
+            var response = await _apiClient.GetAsync<ApiResponse<SurveyAssignmentResponse>>( url);
+
+
+
+            if (response?.Data != null)
+            {
+                _logger.LogInformation("Successfully retrieved survey: {SurveyName}", response.Data.Title);
+                return response.Data;
+            }
+
+            _logger.LogWarning("Survey not found for surveyId: {SurveyId}", assignmentId);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching survey with id: {SurveyId}", assignmentId);
+            throw;
+        }
+    }
     public async Task<int?> CreateSurveyAssignmentAsync(CreateSurveyAssignmentRequest request)
     {
         try
@@ -58,7 +108,7 @@ public class SurveyService : ISurveyService
 
             var response = await _apiClient.PostAsync<ApiResponse<IdResponseDto>>(
      "api/surveys/surveyAssignment",
-       request, "http://localhost:5010");
+       request);
 
             if (response?.Data != null)
             {
@@ -84,7 +134,7 @@ public class SurveyService : ISurveyService
 
             var response = await _apiClient.PostAsync<ApiResponse<IdResponseDto>>(
     "api/surveys/surveyAssignmentTaker",
-         request, "http://localhost:5010");
+         request);
 
             if (response?.Data != null)
             {
@@ -111,7 +161,7 @@ public class SurveyService : ISurveyService
 
             var response = await _apiClient.PostAsync<ApiResponse<IdResponseDto>>(
                     "api/surveys/surveyAssignmentTakerEntry",
-                request, "http://localhost:5010");
+                request);
 
             if (response?.Data != null)
             {
@@ -137,7 +187,7 @@ public class SurveyService : ISurveyService
 
             var response = await _apiClient.PostAsync<ApiResponse<IdResponseDto>>(
              "api/surveys/surveyAssignmentTakerEntryGivenAnswer",
-           request, "http://localhost:5010");
+           request);
 
             if (response?.Data != null && response.Data.Id > 0)
             {
@@ -195,7 +245,7 @@ public class SurveyService : ISurveyService
             var query = $"?Id={userId}&PageNumber={pageNumber}&PageSize={pageSize}";
 
             //var response = await _apiClient.GetAsync<ApiResponse<List<MySurveyResponse>>> ($"api/surveys/mySurvey", "http://localhost:5010");
-            var response = await _apiClient.GetAsync<ApiResponse<List<MySurveyResponse>>>($"api/surveys/mySurvey{query}", "http://localhost:5010");
+            var response = await _apiClient.GetAsync<ApiResponse<List<MySurveyResponse>>>($"api/surveys/mySurvey{query}");
 
             if (response?.Data != null)
             {
@@ -220,8 +270,7 @@ public class SurveyService : ISurveyService
         {
             _logger.LogInformation("Fetching survey report for assignmentId: {AssignmentId}", assignmentId);
 
-            var response = await _apiClient.GetAsync<ApiResponse<List<SurveyReportResponse>>>(
-       $"api/surveys/surveyAssignmentTakerEntryReport/{assignmentId}", "http://localhost:5010");
+            var response = await _apiClient.GetAsync<ApiResponse<List<SurveyReportResponse>>>($"api/surveys/surveyAssignmentTakerEntryReport/{assignmentId}");
 
             if (response?.Data != null)
             {

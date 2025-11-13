@@ -23,7 +23,7 @@
     }
 
     .answer-row {
-        padding: 0.875rem;
+        padding: 1rem;
         margin-bottom: 0.5rem;
         background: #f8f9fa;
         border-radius: 10px;
@@ -33,6 +33,25 @@
         .answer-row:hover {
             background: #e9ecef;
             transform: translateX(5px);
+        }
+
+        .answer-row ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .answer-row ul li {
+            padding: 0.25rem 0;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .answer-row ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0.5rem;
+            color: #667eea;
+            font-weight: bold;
         }
 
     .stats-card {
@@ -121,6 +140,23 @@
     .animated {
         animation: fadeInUp 0.5s ease-out;
     }
+
+    .open-ended-answer {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .answer-text {
+        flex: 1;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+    }
+
+    .question-section .badge {
+        font-size: 0.85rem;
+    }
 </style>
 
 <div class="container mt-3 mb-3">
@@ -186,58 +222,314 @@
             @foreach (var question in Model.GroupedByQuestion.OrderBy(q => q.Value.First().QuestionOrder))
             {
                 var answers = question.Value;
-                var answerGroups = answers.GroupBy(a => a.Answer).OrderByDescending(g => g.Count());
+                var firstAnswer = answers.First();
+                var questionTypeId = firstAnswer.QuestionTypeId;
                 var totalCount = answers.Count;
 
-                <div class="question-section animated" style="animation-delay: @(question.Value.First().QuestionOrder * 0.1)s;">
+                <div class="question-section animated" style="animation-delay: @(firstAnswer.QuestionOrder * 0.1)s;">
                     <h5 class="mb-3">
-                        <span class="badge bg-primary me-2">Soru @answers.First().QuestionOrder</span>
+                        <span class="badge bg-primary me-2">Soru @firstAnswer.QuestionOrder</span>
                         @question.Key
+                        <span class="badge bg-secondary ms-2">@firstAnswer.QuestionTypeName</span>
                     </h5>
 
-                    <!-- Answer Distribution Chart -->
-                    <div class="answer-chart">
-                        <h6 class="mb-3">Cevap Dağılımı:</h6>
-                        @foreach (var answerGroup in answerGroups)
-                        {
-                            var count = answerGroup.Count();
-                            var percentage = (count * 100.0 / totalCount);
+                    @if (questionTypeId == 1 || questionTypeId == 2)
+                    {
+                        <!-- Multiple Choice Questions (Single or Multiple Selection) -->
+                        <!-- Answer Distribution Chart -->
+                        <div class="answer-chart">
+                            <h6 class="mb-3">Cevap Dağılımı:</h6>
+                            @{
+                                // Parse answers to handle multiple choice and "other" options
+                                var parsedAnswers = new Dictionary<string, int>();
+                                
+                                foreach (var answer in answers)
+                                {
+                                    if (string.IsNullOrEmpty(answer.Answer)) continue;
+                                    
+                                    // Split by #SPLIT_CHOICE# for multiple choice answers
+                                    var choices = answer.Answer.Split(new[] { "#SPLIT_CHOICE#" }, StringSplitOptions.RemoveEmptyEntries);
+                                    
+                                    foreach (var choice in choices)
+                                    {
+                                        var displayText = choice.Trim();
+                                        
+                                        // Check if this is an "other" option
+                                        if (displayText.Contains("#other#"))
+                                        {
+                                            var parts = displayText.Split(new[] { "#other#" }, StringSplitOptions.None);
+                                            if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+                                            {
+                                                // Has "other" text
+                                                displayText = parts[0].Trim() + " (Diğer: " + parts[1].Trim() + ")";
+                                            }
+                                            else
+                                            {
+                                                // No "other" text, just show the option
+                                                displayText = parts[0].Trim();
+                                            }
+                                        }
+                                        
+                                        // Also check AnswerOther field
+                                        if (!string.IsNullOrEmpty(answer.AnswerOther) && !displayText.Contains("Diğer:"))
+                                        {
+                                            displayText += " (Diğer: " + answer.AnswerOther + ")";
+                                        }
+                                        
+                                        if (!string.IsNullOrWhiteSpace(displayText))
+                                        {
+                                            if (parsedAnswers.ContainsKey(displayText))
+                                            {
+                                                parsedAnswers[displayText]++;
+                                            }
+                                            else
+                                            {
+                                                parsedAnswers[displayText] = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                var sortedAnswers = parsedAnswers.OrderByDescending(a => a.Value);
+                            }
+                            
+                            @foreach (var answerItem in sortedAnswers)
+                            {
+                                var count = answerItem.Value;
+                                var percentage = (count * 100.0 / totalCount);
 
-                            <div class="answer-bar">
-                                <div class="answer-bar-label" title="@answerGroup.Key">@answerGroup.Key</div>
-                                <div class="answer-bar-fill" style="width: @(percentage)%; min-width: 60px;">
-                                    <span style="padding-left: 8px; color: white; font-weight: 600; font-size: 0.85rem;">@percentage.ToString("F0")%</span>
+                                <div class="answer-bar">
+                                    <div class="answer-bar-label" title="@answerItem.Key">@answerItem.Key</div>
+                                    <div class="answer-bar-fill" style="width: @(percentage)%; min-width: 60px;">
+                                        <span style="padding-left: 8px; color: white; font-weight: 600; font-size: 0.85rem;">@percentage.ToString("F0")%</span>
+                                    </div>
+                                    <div class="answer-bar-count">@count kişi</div>
                                 </div>
-                                <div class="answer-bar-count">@count kişi</div>
+                            }
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <!-- Detailed Answers -->
+                        <h6 class="mb-3">Detaylı Cevaplar:</h6>
+                        
+                        @if (questionTypeId == 2)
+                        {
+                            <!-- Multiple Selection - Group by user to show all their choices together -->
+                            @foreach (var userGroup in Model.GroupedByQuestionAndUser[question.Key])
+                            {
+                                var userAnswers = userGroup.Value;
+                                var firstUserAnswer = userAnswers.First();
+                                
+                                <div class="answer-row">
+                                    <div class="row g-2">
+                                        <div class="col-md-3">
+                                            <strong style="font-size: 0.95rem;">@firstUserAnswer.FullName</strong>
+                                            <br />
+                                            <small class="text-muted">@firstUserAnswer.EmailAddress</small>
+                                            @if (!string.IsNullOrEmpty(firstUserAnswer.PersonnelNo))
+                                            {
+                                                <br />
+                                                <small class="text-muted">Personel No: @firstUserAnswer.PersonnelNo</small>
+                                            }
+                                        </div>
+                                        <div class="col-md-6">
+                                            <i class="bi bi-check-square text-success me-2"></i>
+                                            <strong style="font-size: 0.9rem;">Seçilen Cevaplar:</strong>
+                                            <ul class="mb-0 mt-1" style="padding-left: 2rem;">
+                                                @foreach (var answer in userAnswers)
+                                                {
+                                                    <li>
+                                                        @if (answer.Answer.Contains("#other#"))
+                                                        {
+                                                            var parts = answer.Answer.Split(new[] { "#other#" }, StringSplitOptions.None);
+                                                            <strong>@parts[0].Trim()</strong>
+                                                            @if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+                                                            {
+                                                                <span class="badge bg-info ms-2">Diğer: @parts[1].Trim()</span>
+                                                            }
+                                                            else if (!string.IsNullOrEmpty(answer.AnswerOther))
+                                                            {
+                                                                <span class="badge bg-info ms-2">Diğer: @answer.AnswerOther</span>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            @answer.Answer
+                                                            @if (!string.IsNullOrEmpty(answer.AnswerOther))
+                                                            {
+                                                                <span class="badge bg-info ms-2">Diğer: @answer.AnswerOther</span>
+                                                            }
+                                                        }
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-3 text-end">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                @firstUserAnswer.EntryDate.ToString("dd.MM.yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <!-- Single Selection -->
+                            @foreach (var answer in answers.OrderBy(a => a.UserName))
+                            {
+                                <div class="answer-row">
+                                    <div class="row g-2">
+                                        <div class="col-md-3">
+                                            <strong style="font-size: 0.95rem;">@answer.FullName</strong>
+                                            <br />
+                                            <small class="text-muted">@answer.EmailAddress</small>
+                                            @if (!string.IsNullOrEmpty(answer.PersonnelNo))
+                                            {
+                                                <br />
+                                                <small class="text-muted">Personel No: @answer.PersonnelNo</small>
+                                            }
+                                        </div>
+                                        <div class="col-md-6">
+                                            @{
+                                                // Parse and display answer
+                                                if (!string.IsNullOrEmpty(answer.Answer))
+                                                {
+                                                    if (answer.Answer.Contains("#other#"))
+                                                    {
+                                                        // Single choice with "other" option
+                                                        var parts = answer.Answer.Split(new[] { "#other#" }, StringSplitOptions.None);
+                                                        <div>
+                                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                                            <strong style="font-size: 0.95rem;">@parts[0].Trim()</strong>
+                                                            @if (parts.Length > 1 && !string.IsNullOrEmpty(parts[1].Trim()))
+                                                            {
+                                                                <br />
+                                                                <span class="badge bg-info mt-1">Diğer: @parts[1].Trim()</span>
+                                                            }
+                                                            else if (!string.IsNullOrEmpty(answer.AnswerOther))
+                                                            {
+                                                                <br />
+                                                                <span class="badge bg-info mt-1">Diğer: @answer.AnswerOther</span>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        // Simple answer
+                                                        <div>
+                                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                                            <strong style="font-size: 0.95rem;">@answer.Answer</strong>
+                                                            @if (!string.IsNullOrEmpty(answer.AnswerOther))
+                                                            {
+                                                                <br />
+                                                                <span class="badge bg-info mt-1">Diğer: @answer.AnswerOther</span>
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted"><i>Cevap verilmedi</i></span>
+                                                }
+                                            }
+                                        </div>
+                                        <div class="col-md-3 text-end">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                @answer.EntryDate.ToString("dd.MM.yyyy HH:mm")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else if (questionTypeId == 3)
+                    {
+                        <!-- Open Ended Questions -->
+                        <h6 class="mb-3">Cevaplar:</h6>
+                        @foreach (var answer in answers.OrderBy(a => a.UserName))
+                        {
+                            <div class="answer-row">
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <strong style="font-size: 0.95rem;">@answer.FullName</strong>
+                                        <br />
+                                        <small class="text-muted">@answer.EmailAddress</small>
+                                        @if (!string.IsNullOrEmpty(answer.PersonnelNo))
+                                        {
+                                            <br />
+                                            <small class="text-muted">Personel No: @answer.PersonnelNo</small>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="open-ended-answer">
+                                            <i class="bi bi-chat-left-text text-primary me-2"></i>
+                                            <div class="answer-text">
+                                                @if (!string.IsNullOrEmpty(answer.Answer))
+                                                {
+                                                    <p class="mb-0" style="white-space: pre-wrap; word-wrap: break-word;">@answer.Answer</p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted mb-0"><i>Cevap verilmedi</i></p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @answer.EntryDate.ToString("dd.MM.yyyy HH:mm")
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         }
-                    </div>
-
-                    <hr class="my-3" />
-
-                    <!-- Detailed Answers -->
-                    <h6 class="mb-3">Detaylı Cevaplar:</h6>
-                    @foreach (var answer in answers.OrderBy(a => a.UserName))
+                    }
+                    else
                     {
-                        <div class="answer-row">
-                            <div class="row align-items-center g-2">
-                                <div class="col-md-4">
-                                    <strong style="font-size: 0.95rem;">@answer.FullName</strong>
-                                    <br />
-                                    <small class="text-muted">@answer.EmailAddress</small>
-                                </div>
-                                <div class="col-md-4">
-                                    <i class="bi bi-check-circle text-success me-2"></i>
-                                    <strong style="font-size: 0.95rem;">@answer.Answer</strong>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock me-1"></i>
-                                        @answer.EntryDate.ToString("dd.MM.yyyy HH:mm")
-                                    </small>
+                        <!-- Unknown Question Type - Fallback -->
+                        <h6 class="mb-3">Detaylı Cevaplar:</h6>
+                        @foreach (var answer in answers.OrderBy(a => a.UserName))
+                        {
+                            <div class="answer-row">
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <strong style="font-size: 0.95rem;">@answer.FullName</strong>
+                                        <br />
+                                        <small class="text-muted">@answer.EmailAddress</small>
+                                        @if (!string.IsNullOrEmpty(answer.PersonnelNo))
+                                        {
+                                            <br />
+                                            <small class="text-muted">Personel No: @answer.PersonnelNo</small>
+                                        }
+                                    </div>
+                                    <div class="col-md-6">
+                                        @if (!string.IsNullOrEmpty(answer.Answer))
+                                        {
+                                            <div>
+                                                <i class="bi bi-info-circle text-info me-2"></i>
+                                                <strong style="font-size: 0.95rem;">@answer.Answer</strong>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted"><i>Cevap verilmedi</i></span>
+                                        }
+                                    </div>
+                                    <div class="col-md-3 text-end">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @answer.EntryDate.ToString("dd.MM.yyyy HH:mm")
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        }
                     }
                 </div>
             }

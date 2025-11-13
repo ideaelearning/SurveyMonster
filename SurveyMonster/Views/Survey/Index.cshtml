@@ -3,119 +3,7 @@
     ViewData["Title"] = "Anket Bilgisi";
 }
 
-<style>
-    .survey-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        padding: 2rem;
-        color: white;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-    }
-
-    .info-card {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-        }
-
-    .info-item {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 12px;
-        margin-bottom: 0.75rem;
-        transition: all 0.3s ease;
-    }
-
-        .info-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-    .info-icon {
-        width: 45px;
-        height: 45px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 0.875rem;
-        font-size: 1.25rem;
-        color: white;
-    }
-
-    .start-btn {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border: none;
-        border-radius: 12px;
-        padding: 0.875rem 2rem;
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: white;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-    }
-
-        .start-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-        }
-
-        .start-btn:active {
-            transform: translateY(-1px);
-        }
-
-    .survey-badge {
-        display: inline-block;
-        padding: 0.4rem 0.875rem;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        font-size: 0.85rem;
-        margin-bottom: 0.75rem;
-    }
-
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animated {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    .pulse {
-        animation: pulse 2s infinite;
-    }
-
-    @@keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.05);
-        }
-    }
-</style>
+<link rel="stylesheet" href="~/css/survey-enhancements.css" asp-append-version="true" />
 
 <div class="container mt-3 mb-3">
     <div class="row justify-content-center">
@@ -193,13 +81,118 @@
                 </div>
      }
 
+                <!-- Preview Button -->
+                <div class="mt-4 text-center">
+                    <button type="button" class="btn btn-outline-primary" id="previewBtn" style="border-radius: 12px; padding: 0.75rem 1.5rem; font-weight: 600;">
+                        <i class="bi bi-eye me-2"></i>Anketi Önizle
+                    </button>
+                </div>
+
                 <!-- Start Survey Form -->
                 <form asp-action="StartSurvey" method="post" class="mt-4">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" name="surveyId" value="@Model.SurveyId" />
+                    <input type="hidden" name="surveyAssignmetId" value="@Model.SurveyId" />
+
+                    @* Dynamic User Info Section *@
+                    @if (Model.RequiresAnonymousInfo && Model.RequiredUserInformations != null)
+                    {
+                        <div class="anonymous-info-section mt-4 p-4" style="background: #fff3cd; border-radius: 12px; border-left: 4px solid #ffc107;">
+                            <h6 class="mb-3" style="color: #856404;">
+                                <i class="bi bi-person-fill me-2"></i>Lütfen bilgilerinizi girin
+                            </h6>
+                            <div class="row g-3">
+                                @* Dynamically render fields based on RequiredUserInformations *@
+                                
+                                @if (Model.RequiredUserInformations.Name.HasValue && Model.RequiredUserInformations.Name.Value)
+                                {
+                                    <div class="col-md-6">
+                                        <label for="userName" class="form-label">Ad <span class="text-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control user-info-field" 
+                                               id="userName" 
+                                               name="userInfo.Name" 
+                                               data-field="Name"
+                                               required 
+                                               placeholder="Adınızı girin"
+                                               style="border-radius: 8px;" />
+                                        <div class="invalid-feedback">
+                                            Ad alanı zorunludur
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @if (Model.RequiredUserInformations.Surname.HasValue && Model.RequiredUserInformations.Surname.Value)
+                                {
+                                    <div class="col-md-6">
+                                        <label for="userSurname" class="form-label">Soyad <span class="text-danger">*</span></label>
+                                        <input type="text" 
+                                               class="form-control user-info-field" 
+                                               id="userSurname" 
+                                               name="userInfo.Surname" 
+                                               data-field="Surname"
+                                               required 
+                                               placeholder="Soyadınızı girin"
+                                               style="border-radius: 8px;" />
+                                        <div class="invalid-feedback">
+                                            Soyad alanı zorunludur
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @if (Model.RequiredUserInformations.Email.HasValue&& Model.RequiredUserInformations.Email.Value)
+                                {
+                                    <div class="col-12">
+                                        <label for="userEmail" class="form-label">E-posta <span class="text-danger">*</span></label>
+                                        <input type="email" 
+                                               class="form-control user-info-field" 
+                                               id="userEmail" 
+                                               name="userInfo.Email" 
+                                               data-field="Email"
+                                               required 
+                                               placeholder="ornek@email.com"
+                                               style="border-radius: 8px;" />
+                                        <div class="invalid-feedback">
+                                            Geçerli bir e-posta adresi girin
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @if (Model.RequiredUserInformations.Phone.HasValue && Model.RequiredUserInformations.Phone.Value)
+                                {
+                                    <div class="col-12">
+                                        <label for="userPhone" class="form-label">Telefon <span class="text-danger">*</span></label>
+                                        <input type="tel" 
+                                               class="form-control user-info-field" 
+                                               id="userPhone" 
+                                               name="userInfo.Phone" 
+                                               data-field="Phone"
+                                               required 
+                                               placeholder="05XX XXX XX XX"
+                                               style="border-radius: 8px;" />
+                                        <div class="invalid-feedback">
+                                            Telefon numarası zorunludur
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @* Hidden field to store JSON *@
+                                <input type="hidden" id="userInfoJson" name="userInfoJson" />
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Consent Section -->
+                    <div class="consent-section mt-4 p-3" style="background: #f8f9fa; border-radius: 12px; border-left: 4px solid #667eea;">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="consentCheckbox" style="cursor: pointer; width: 1.2rem; height: 1.2rem;" />
+                            <label class="form-check-label" for="consentCheckbox" style="cursor: pointer; padding-left: 0.5rem; user-select: none;">
+                                <strong>Yukarıdaki bilgilendirme metnini okudum ve anladım</strong>
+                            </label>
+                        </div>
+                    </div>
 
                     <div class="d-grid" style=" justify-items: center;">
-                        <button type="submit" class="start-btn pulse">
+                        <button type="submit" id="startSurveyBtn" class="start-btn pulse" disabled>
                             <i class="bi bi-play-circle me-2"></i>
                             Ankete Başla
                         </button>
@@ -216,3 +209,181 @@
         </div>
     </div>
 </div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" id="previewModalContent">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Yükleniyor...</span>
+                </div>
+                <p class="mt-3 text-muted">Önizleme yükleniyor...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Consent checkbox and button interaction
+    document.addEventListener('DOMContentLoaded', function() {
+        const consentCheckbox = document.getElementById('consentCheckbox');
+        const startSurveyBtn = document.getElementById('startSurveyBtn');
+
+        if (consentCheckbox && startSurveyBtn) {
+            consentCheckbox.addEventListener('change', function() {
+                startSurveyBtn.disabled = !this.checked;
+                
+                // Remove pulse animation when disabled, add it back when enabled
+                if (this.checked) {
+                    startSurveyBtn.classList.add('pulse');
+                } else {
+                    startSurveyBtn.classList.remove('pulse');
+                }
+            });
+        }
+
+        // Form validation and JSON creation for dynamic user info
+        const surveyForm = document.querySelector('form[action*="StartSurvey"]');
+        if (surveyForm) {
+            surveyForm.addEventListener('submit', function(e) {
+                const userInfoFields = document.querySelectorAll('.user-info-field');
+                
+                // Only validate if user info fields exist
+                if (userInfoFields.length > 0) {
+                    let isValid = true;
+                    const userInfoData = {};
+
+                    userInfoFields.forEach(field => {
+                        const fieldName = field.dataset.field;
+                        const fieldValue = field.value.trim();
+                        
+                        // Validate field
+                        if (!fieldValue) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            // Special validation for email
+                            if (fieldName === 'Email') {
+                                const emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                                if (!emailPattern.test(fieldValue)) {
+                                    field.classList.add('is-invalid');
+                                    isValid = false;
+                                } else {
+                                    field.classList.remove('is-invalid');
+                                    userInfoData[fieldName] = fieldValue;
+                                }
+                            } else {
+                                field.classList.remove('is-invalid');
+                                userInfoData[fieldName] = fieldValue;
+                            }
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Create JSON and store in hidden field
+                    const userInfoJson = document.getElementById('userInfoJson');
+                    if (userInfoJson) {
+                        userInfoJson.value = JSON.stringify(userInfoData);
+                    }
+                }
+            });
+
+            // Real-time validation for dynamic user info fields
+            const userInfoFields = document.querySelectorAll('.user-info-field');
+            userInfoFields.forEach(field => {
+                field.addEventListener('input', function() {
+                    const fieldName = this.dataset.field;
+                    
+                    if (fieldName === 'Email') {
+                        const emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+                        if (this.value.trim() && emailPattern.test(this.value)) {
+                            this.classList.remove('is-invalid');
+                        }
+                    } else {
+                        if (this.value.trim()) {
+                            this.classList.remove('is-invalid');
+                        }
+                    }
+                });
+            });
+        }
+
+        // Preview button functionality
+        const previewBtn = document.getElementById('previewBtn');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', function() {
+                const surveyId = @Model.SurveyId;
+                const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+                const modalContent = document.getElementById('previewModalContent');
+                
+                // Show loading state
+                modalContent.innerHTML = `
+                    <div class="modal-body text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Yükleniyor...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Önizleme yükleniyor...</p>
+                    </div>
+                `;
+                
+                modal.show();
+                
+                // Load preview content with timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                fetch(`/Survey/PreviewSurvey?surveyId=${surveyId}`, {
+                    signal: controller.signal
+                })
+                    .then(response => {
+                        clearTimeout(timeoutId);
+                        if (!response.ok) {
+                            if (response.status === 404) {
+                                throw new Error('Anket bulunamadı');
+                            } else if (response.status === 500) {
+                                return response.text().then(text => {
+                                    throw new Error(text || 'Sunucu hatası oluştu');
+                                });
+                            } else {
+                                throw new Error('Önizleme yüklenemedi');
+                            }
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        modalContent.innerHTML = html;
+                    })
+                    .catch(error => {
+                        clearTimeout(timeoutId);
+                        console.error('Error loading preview:', error);
+                        
+                        let errorMessage = 'Önizleme yüklenirken bir hata oluştu. Lütfen tekrar deneyin.';
+                        if (error.name === 'AbortError') {
+                            errorMessage = 'İstek zaman aşımına uğradı. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.';
+                        } else if (error.message) {
+                            errorMessage = error.message;
+                        }
+                        
+                        modalContent.innerHTML = `
+                            <div class="modal-body">
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    ${errorMessage}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                            </div>
+                        `;
+                    });
+            });
+        }
+    });
+</script>
+
+<script src="~/js/survey-enhancements.js" asp-append-version="true"></script>

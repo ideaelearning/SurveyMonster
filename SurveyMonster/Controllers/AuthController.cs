@@ -1,23 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Lms.Shared.Domain.Helpers;
+using Microsoft.AspNetCore.Mvc;
 using SurveyMonster.Models.Requests;
 using SurveyMonster.Services;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace SurveyMonster.Controllers;
 
 public class AuthController : Controller
 {
     private readonly IAuthService _authService;
+    private readonly ISurveyService _surveyService;
     private readonly ILogger<AuthController> _logger;
     private const string IsAnonymousKey = "IsAnonymous";
+    private const string enc_private_key = "6AmxCMy2y0C3z4tvH6lNBl39N6ZLoiBQ";
 
-    public AuthController(IAuthService authService, ILogger<AuthController> logger)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger, ISurveyService surveyService)
     {
         _authService = authService;
         _logger = logger;
+        _surveyService = surveyService;
     }
 
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
+    public IActionResult Login(string? survey = null)
     {
         // If already logged in, redirect to survey
         if (!string.IsNullOrEmpty(_authService.GetAuthToken()))
@@ -25,7 +33,10 @@ public class AuthController : Controller
             return RedirectToAction("Index", "Survey");
         }
 
-        ViewData["ReturnUrl"] = returnUrl;
+        if (/*!string.IsNullOrEmpty(survey)*/true)
+        {
+            ViewData["ReturnUrl"] = Uri.UnescapeDataString(CryptographyHelper.Encrypt("30954", enc_private_key)); // test amaçlı  30954 yerine survey gelecek
+        }
         return View();
     }
 
@@ -40,21 +51,29 @@ public class AuthController : Controller
 
         try
         {
+
+        
             var result = await _authService.LoginAsync(request);
 
             if (result.Success)
             {
                 _logger.LogInformation("User logged in successfully: {Username}", request.Username);
 
-                // Mark as authenticated (not anonymous)
                 HttpContext.Session.SetString(IsAnonymousKey, "false");
-
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                try
                 {
-                    return Redirect(returnUrl);
-                }
+                    var decoded = Uri.UnescapeDataString(returnUrl);
+                    long assignmentId = Convert.ToInt64(CryptographyHelper.Decrypt(decoded, enc_private_key));
 
-                return RedirectToAction("Index", "Survey");
+                    //aynı giriş kontrolü
+                    //CheckAssignment(assignmentId,true,hash);
+
+                    return RedirectToAction("Index", "Survey", new { surveyAssignmentId = assignmentId });
+                }
+                catch (Exception ex )
+                {
+                    return RedirectToAction("Index", "Auth");
+                }
             }
 
             ModelState.AddModelError(string.Empty, result.ErrorMessage);
@@ -69,7 +88,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
-    public IActionResult AnonymousEntry(string? returnUrl = null)
+    public async Task<IActionResult> AnonymousEntry(string? returnUrl = null)
     {
         try
         {
@@ -79,15 +98,25 @@ public class AuthController : Controller
 
             // Mark as anonymous user
             HttpContext.Session.SetString(IsAnonymousKey, "true");
-
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+            var userAgent = HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? "";
+            string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Regex.Replace(ip + userAgent, @"\s+", ""))));
             _logger.LogInformation("Anonymous user entered the survey");
 
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            try
             {
-                return Redirect(returnUrl);
-            }
+                var decoded = Uri.UnescapeDataString(returnUrl);
+                long assignmentId = Convert.ToInt64(CryptographyHelper.Decrypt(decoded, enc_private_key));
 
-            return RedirectToAction("Index", "Survey");
+                //aynı giriş kontrolü
+                //CheckAssignment(assignmentId,true,hash);
+
+                return RedirectToAction("Index", "Survey", new { surveyAssignmentId = assignmentId });
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("Index", "Auth");
+            }
         }
         catch (Exception ex)
         {
@@ -96,7 +125,12 @@ public class AuthController : Controller
             return RedirectToAction("Login");
         }
     }
+    private async Task<bool> CheckAssignment(long assignmentId,bool anonymous,string anonymousId)
+    {
+        //aynı giriş kontrolü
+        return await _surveyService.CheckSurveyAssignment(assignmentId, anonymous, anonymousId);
 
+    }
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Logout()

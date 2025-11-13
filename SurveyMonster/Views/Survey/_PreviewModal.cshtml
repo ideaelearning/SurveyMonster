@@ -1,0 +1,75 @@
+@model SurveyMonster.Models.ViewModels.SurveyPreviewViewModel
+
+<div class="modal-header">
+    <h5 class="modal-title">
+        <i class="bi bi-eye me-2"></i>Anket Önizleme: @Model.SurveyName
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+</div>
+<div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+    @if (Model.Questions != null && Model.Questions.Any())
+    {
+        @foreach (var question in Model.Questions)
+        {
+            <div class="preview-question">
+                <h6>
+                    Soru @question.Order: @question.QuestionText
+                    <span class="question-type-badge">@question.QuestionTypeName</span>
+                </h6>
+
+                @if (question.QuestionTypeId == 1)
+                {
+                    <!-- Single Choice (Radio) -->
+                    <ul class="preview-options">
+                        @foreach (var option in question.Options)
+                        {
+                            <li>
+                                <i class="bi bi-circle me-2" style="color: #667eea;"></i>
+                                @(option.IsOther && string.IsNullOrEmpty(option.OptionText) ? "Diğer (Metin girişi)" : option.OptionText)
+                              
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (question.QuestionTypeId == 2)
+                {
+                    <!-- Multiple Choice (Checkbox) -->
+                    <ul class="preview-options">
+                        @foreach (var option in question.Options)
+                        {
+                            <li>
+                                <i class="bi bi-square me-2" style="color: #667eea;"></i>
+                                @(option.IsOther && string.IsNullOrEmpty(option.OptionText) ? "Diğer (Metin girişi)" : option.OptionText)
+                               
+                            </li>
+                        }
+                    </ul>
+                }
+                else if (question.QuestionTypeId == 3)
+                {
+                    <!-- Open Ended (Textarea) -->
+                    <div class="preview-textarea">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Açık uçlu metin alanı - Buraya cevabınızı yazabilirsiniz
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Bilinmeyen soru tipi</p>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Bu ankette henüz soru bulunmamaktadır.
+        </div>
+    }
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="bi bi-x-circle me-2"></i>Kapat
+    </button>
+</div>

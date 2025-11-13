@@ -8,4 +8,5 @@ public class CreateSurveyEntryRequest
     public int SurveyState { get; set; }
     public float? Score { get; set; }
     public bool IsLive { get; set; }
+    public bool IsAnonymous { get; set; } = true;
 }

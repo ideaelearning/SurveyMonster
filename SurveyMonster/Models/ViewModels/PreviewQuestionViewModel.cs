@@ -1,8 +1,6 @@
-using SurveyMonster.Models.DTOs;
-
 namespace SurveyMonster.Models.ViewModels;
 
-public class QuestionViewModel
+public class PreviewQuestionViewModel
 {
     public int QuestionId { get; set; }
     public string QuestionText { get; set; } = string.Empty;
