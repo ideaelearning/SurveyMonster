@@ -64,18 +64,13 @@ public class ApiClient : IApiClient
         }
     }
 
-    public async Task<T?> GetAsync<T>(string endpoint, string b = "")
+    public async Task<T?> GetAsync<T>(string endpoint)
     {
         try
         {
             _logger.LogInformation("GET request to {Endpoint}", endpoint);
 
             SetAuthorizationHeader();
-
-            if (!string.IsNullOrEmpty(b))
-            {
-                _httpClient.BaseAddress = new Uri(b);
-            }
 
             var response = await _httpClient.GetAsync(endpoint);
 
@@ -113,23 +108,13 @@ public class ApiClient : IApiClient
         }
     }
 
-    public async Task<T?> PostAsync<T>(string endpoint, object data, string baseUrl = "")
+    public async Task<T?> PostAsync<T>(string endpoint, object data)
     {
         try
         {
             _logger.LogInformation("POST request to {Endpoint}", endpoint);
 
-            try
-            {
-                if (!string.IsNullOrEmpty(baseUrl))
-                {
-                    _httpClient.BaseAddress = new Uri(baseUrl);
-                }
-            }
-            catch (Exception)
-            {
-            }
-
+     
             SetAuthorizationHeader();
 
             var jsonContent = JsonSerializer.Serialize(data);
