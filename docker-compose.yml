@@ -1,7 +1,7 @@
 services:
   surveymonster-api:
     build:
-      context: .
+      context: ./SurveyMonster
       dockerfile: Dockerfile
     container_name: surveymonster-api
     ports:
