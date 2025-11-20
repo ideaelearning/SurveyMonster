@@ -46,13 +46,12 @@ public class AuthController : Controller
     {
         if (!ModelState.IsValid)
         {
+            ViewData["ReturnUrl"] = returnUrl; // Preserve returnUrl when returning to view
             return View(request);
         }
 
         try
         {
-
-        
             var result = await _authService.LoginAsync(request);
 
             if (result.Success)
@@ -60,29 +59,39 @@ public class AuthController : Controller
                 _logger.LogInformation("User logged in successfully: {Username}", request.Username);
 
                 HttpContext.Session.SetString(IsAnonymousKey, "false");
-                try
+                // Check if returnUrl exists
+                if (!string.IsNullOrEmpty(returnUrl))
                 {
-                    var decoded = Uri.UnescapeDataString(returnUrl);
-                    long assignmentId = Convert.ToInt64(CryptographyHelper.Decrypt(decoded, enc_private_key));
+                    try
+                    {
+                        var decoded = Uri.UnescapeDataString(returnUrl);
+                        long assignmentId = Convert.ToInt64(CryptographyHelper.Decrypt(decoded, enc_private_key));
 
-                    //aynı giriş kontrolü
-                    //CheckAssignment(assignmentId,true,hash);
+                        //aynı giriş kontrolü
+                        //CheckAssignment(assignmentId,true,hash);
 
-                    return RedirectToAction("Index", "Survey", new { surveyAssignmentId = assignmentId });
+                        return RedirectToAction("Index", "Survey", new { surveyAssignmentId = assignmentId });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error decrypting returnUrl");
+                        return RedirectToAction("Index", "Survey");
+                    }
                 }
-                catch (Exception ex )
-                {
-                    return RedirectToAction("Index", "Auth");
-                }
+
+                // If no returnUrl, redirect to survey index
+                return RedirectToAction("Index", "Survey");
             }
 
             ModelState.AddModelError(string.Empty, result.ErrorMessage);
+            ViewData["ReturnUrl"] = returnUrl; // Preserve returnUrl when returning to view
             return View(request);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login attempt");
             ModelState.AddModelError(string.Empty, "Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+            ViewData["ReturnUrl"] = returnUrl; // Preserve returnUrl when returning to view
             return View(request);
         }
     }

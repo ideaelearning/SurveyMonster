@@ -36,6 +36,12 @@
                     <form asp-action="Login" method="post">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
+                        @* Hidden field to preserve returnUrl *@
+                        @if (ViewData["ReturnUrl"] != null)
+                        {
+                            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                        }
+
                         <div class="mb-3">
                             <label asp-for="Username" class="form-label">Email</label>
                             <input asp-for="Username" class="form-control" placeholder="ornek@email.com" />
