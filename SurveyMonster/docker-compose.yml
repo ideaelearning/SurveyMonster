@@ -1,0 +1,18 @@
+services:
+  surveymonster-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: surveymonster-api
+    ports:
+      - "5050:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - surveymonster-network
+    restart: unless-stopped
+
+networks:
+  surveymonster-network:
+    driver: bridge
